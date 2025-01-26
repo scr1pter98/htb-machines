@@ -1,0 +1,25 @@
+##Conectados ya a la red de la máquina víctima.. 
+
+##NMAP
+Primer comando para descubrimiento de puertos 
+
+nmap --open -sS -p- -sCV -n -Pn -vvv 10.129.62.79 -oG escaneoNmap
+
+En el caso de esta máquina: 
+
+   1   │ # Nmap 7.95 scan initiated Sat Jan 25 15:42:21 2025 as: nmap --open -sS -p- -
+       │ sCV -n -Pn -vvv -oG escaneoNmap 10.129.62.79
+   2   │ # Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+   3   │ Host: 10.129.62.79 ()   Status: Up
+   4   │ Host: 10.129.62.79 ()   Ports: 23/open/tcp//telnet//Linux telnetd/
+
+Vemos el puerto 23 abierto con telnet up, intentemos conectarnos.
+
+telnet 10.129.62.79 23 [telnet ip-objetivo puerto]
+
+Nos pide un usuario y una contraseña
+
+Probamos algunas y.... root es el usuario que debemos colocar, 
+en este caso ni contraseña nos pedirá.
+
+Y ualá, !Ya resolvimos nuestra primera máquina!

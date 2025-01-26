@@ -1,0 +1,65 @@
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.43.160 (ttl -> 63): Linux
+
+## NMAP 
+# Descubramos puertos y servicios en la máquina objetivo
+
+nmap --open -sS -p- -sCV -n -Pn -vvv 10.129.43.160 -oG escaneoNmap
+
+En este caso nuestra máquina víctima solo muestra 1 puerto abierto:
+6379/tcp open  redis   syn-ack ttl 63 Redis key-value store 5.0.7
+
+El puerto 6379 es el puerto por defecto para **Redis**, que es un sistema de base de datos de clave-valor. 
+En este caso, la máquina en la que estás trabajando parece tener un servidor Redis expuesto, lo que puede ser un punto de entrada interesante para explorar más.
+
+### Posibles caminos de explotación:
+1. **Acceso no autenticado a Redis**: Si Redis no está protegido por una contraseña o algún tipo de autenticación, podrías interactuar directamente con 
+la base de datos y explorar las claves almacenadas. Esto puede llevar a encontrar información sensible o incluso credenciales.
+   
+2. **Ataques de escritura**: Si tienes acceso para escribir, podrías manipular o añadir claves, lo que podría llevar a un acceso privilegiado si, por ejemplo, 
+la aplicación que utiliza Redis no valida correctamente las entradas.
+
+3. **Exploración de vulnerabilidades**: Algunas versiones de Redis tienen vulnerabilidades conocidas que podrían ser explotadas. En tu caso, 
+la versión es **5.0.7**, por lo que sería útil verificar si esa versión tiene vulnerabilidades específicas que podrían ser aprovechadas.
+
+### Tipo de base de datos de Redis:
+Redis es un **"In-memory Database"** (base de datos en memoria). Esto significa que los datos se almacenan principalmente en la memoria RAM en lugar de en disco, 
+lo que permite operaciones extremadamente rápidas, pero los datos pueden perderse si el servidor se apaga.
+
+## Interactuemos entonces con Redis:
+#Paso 1: Conectar a Redis
+
+	Para interactuar con Redis, puedes usar el cliente de línea de comandos redis-cli.
+	Si no tienes redis-cli en tu máquina, puedes instalarlo dependiendo de tu sistema operativo. Sin embargo, dado que estás en un entorno de pentesting, 
+	lo más probable es que ya tengas acceso al cliente de Redis en la máquina de destino.
+
+	Si estás en una máquina con redis-cli instalado, simplemente usa el siguiente comando para conectarte:
+
+redis-cli -h <ip_del_objetivo> -p 6379
+
+Resumen de comandos útiles:
+
+    keys *: Ver todas las claves.
+    get <key>: Ver el valor de una clave.
+    set <key> <value>: Establecer una clave con un valor.
+    del <key>: Eliminar una clave.
+    scan 0: Buscar claves de manera iterativa.
+    config get *: Ver la configuración del servidor Redis.
+	info: muestra información del servidor
+	
+## Aquí tirando de keys * encontramos la flag
+
+10.129.43.160:6379> keys *
+1) "numb"
+2) "stor"
+3) "flag"
+4) "temp"
+(0.62s)
+10.129.43.160:6379> get flag
+"03e1d2b376c37ab3f5319922053953eb" << FLAG
+
+
+

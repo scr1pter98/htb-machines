@@ -1,0 +1,5 @@
+# Nmap 7.95 scan initiated Sat Jan 25 18:48:33 2025 as: nmap --open -sS -p- -sCV -n -Pn -vvv -oG escaneoNmap 10.129.43.160
+# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+Host: 10.129.43.160 ()	Status: Up
+Host: 10.129.43.160 ()	Ports: 6379/open/tcp//redis//Redis key-value store 5.0.7/
+# Nmap done at Sat Jan 25 18:49:57 2025 -- 1 IP address (1 host up) scanned in 83.83 seconds

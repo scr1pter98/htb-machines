@@ -1,0 +1,5 @@
+# Nmap 7.95 scan initiated Sat Jan 25 19:17:11 2025 as: nmap --open -sS -p- -sCV -n -Pn -A -v -oG escaneoNmap 10.129.36.232
+# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+Host: 10.129.36.232 ()	Status: Up
+Host: 10.129.36.232 ()	Ports: 80/open/tcp//http//Apache httpd 2.4.38 ((Debian))/	OS: Linux 4.15 - 5.19	Seq Index: 249	IP ID Seq: All zeros
+# Nmap done at Sat Jan 25 19:18:51 2025 -- 1 IP address (1 host up) scanned in 100.23 seconds

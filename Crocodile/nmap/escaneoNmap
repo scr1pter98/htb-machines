@@ -1,0 +1,5 @@
+# Nmap 7.95 scan initiated Sun Jan 26 00:38:47 2025 as: nmap --open -sS -p- -sCV -n -Pn -T5 -v -oG escaneoNmap 10.129.1.15
+# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+Host: 10.129.1.15 ()	Status: Up
+Host: 10.129.1.15 ()	Ports: 21/open/tcp//ftp//vsftpd 3.0.3/, 80/open/tcp//http//Apache httpd 2.4.41 ((Ubuntu))/
+# Nmap done at Sun Jan 26 00:41:06 2025 -- 1 IP address (1 host up) scanned in 139.08 seconds

