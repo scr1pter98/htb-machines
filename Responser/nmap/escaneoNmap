@@ -1,0 +1,5 @@
+# Nmap 7.95 scan initiated Sun Jan 26 02:13:52 2025 as: nmap --open -sS -p- -sCV -n -Pn -T5 -v -oG escaneoNmap 10.129.211.143
+# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+Host: 10.129.211.143 ()	Status: Up
+Host: 10.129.211.143 ()	Ports: 80/open/tcp//http//Apache httpd 2.4.52 ((Win64) OpenSSL|1.1.1m PHP|8.1.1)/, 5985/open/tcp//http//Microsoft HTTPAPI httpd 2.0 (SSDP|UPnP)/	Ignored State: filtered (65533)
+# Nmap done at Sun Jan 26 02:19:17 2025 -- 1 IP address (1 host up) scanned in 325.24 seconds

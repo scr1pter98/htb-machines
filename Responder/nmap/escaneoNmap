@@ -1,2 +1,0 @@
-# Nmap 7.95 scan initiated Sun Jan 26 02:13:52 2025 as: nmap --open -sS -p- -sCV -n -Pn -T5 -v -oG escaneoNmap 10.129.211.143
-# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
