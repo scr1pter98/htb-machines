@@ -1,0 +1,21 @@
+## Iniciamos la vpn
+sudo openvpn starting_point_scr1pter98.ovpn
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.1.15 (ttl -> 63): Linux
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+sudo nmap --open -sS -p- -sCV -n -Pn -T5 -v 10.129.1.15 -oG escaneoNmap
+
+
+
+
+
+
+FLAG: 
+
+En esta máquina vimos -

@@ -1,0 +1,4 @@
+# Nmap 7.95 scan initiated Sun Jan 26 22:27:49 2025 as: nmap -p- --open -sS --min-rate 5000 -n -sCV -Pn -oG escaneoNmap 10.129.1.140
+Host: 10.129.1.140 ()	Status: Up
+Host: 10.129.1.140 ()	Ports: 22/open/tcp//ssh//OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)/, 80/open/tcp//http//Apache httpd 2.4.29 ((Ubuntu))/	Ignored State: closed (65533)
+# Nmap done at Sun Jan 26 22:28:15 2025 -- 1 IP address (1 host up) scanned in 26.32 seconds

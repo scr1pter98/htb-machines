@@ -1,0 +1,62 @@
+## Iniciamos la vpn
+sudo openvpn starting_point_scr1pter98.ovpn
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.95.187 (ttl -> 127): Windows
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+sudo nmap --open -sS -p- -sCV -n -Pn -T5 -v 10.129.95.187 -oG targeted
+
+#Encontramos algunos puertos abiertos, veamos de que se trata.
+
+PORT      STATE SERVICE      VERSION
+135/tcp   open  msrpc        Microsoft Windows RPC
+139/tcp   open  netbios-ssn  Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds Windows Server 2019 Standard 17763 microsoft-ds
+1433/tcp  open  ms-sql-s     Microsoft SQL Server 2017 14.00.1000.00; RTM
+|_ms-sql-info: ERROR: Script execution failed (use -d to debug)
+|_ms-sql-ntlm-info: ERROR: Script execution failed (use -d to debug)
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Issuer: commonName=SSL_Self_Signed_Fallback
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-01-28T03:17:56
+| Not valid after:  2055-01-28T03:17:56
+| MD5:   fd8e:c322:813c:3bad:4522:d5b6:79d3:cde7
+|_SHA-1: 3d7c:4e6e:2a86:f976:2ebc:cb99:4f6a:eaff:7ddb:6219
+|_ssl-date: 2025-01-28T03:45:07+00:00; 0s from scanner time.
+5985/tcp  open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+47001/tcp open  http         Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc        Microsoft Windows RPC
+49665/tcp open  msrpc        Microsoft Windows RPC
+49666/tcp open  msrpc        Microsoft Windows RPC
+49667/tcp open  msrpc        Microsoft Windows RPC
+49668/tcp open  msrpc        Microsoft Windows RPC
+49669/tcp open  msrpc        Microsoft Windows RPC
+Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
+
+## Aquí ya dejo muestra cositas interesantes
+
+> 135/tcp (MSRPC): Utilizado por Microsoft Remote Procedure Call (RPC) para coordinar servicios DCOM y otros procesos en Windows.
+> 139/tcp (NetBIOS Session Service): Asociado con la compartición de archivos y recursos en redes Windows mediante SMB sobre NetBIOS.
+> 445/tcp (SMB): Usado por Server Message Block (SMB) para compartir archivos, impresoras y otros recursos en una red sin usar NetBIOS.
+> 49668/tcp, 49667/tcp, 49664/tcp: Puertos dinámicos asignados por RPC para que servicios específicos respondan. Son parte de la gama dinámica de puertos en Windows (49152-65535).
+> 1433/tcp (MSSQL): Puerto predeterminado para Microsoft SQL Server, utilizado para la administración y consultas en bases de datos.
+> 5985/tcp (WinRM): Usado por Windows Remote Management (WinRM) para la administración remota mediante WS-Management.
+
+#Estos puertos sugieren que la máquina es un servidor Windows con posibles servicios de administración remota, bases de datos y compartición de recursos.
+#Exploremos SMB Y SSQL, puede ser vectores interesantes.
+
+
+FLAG: 
+
+En esta máquina vimos -

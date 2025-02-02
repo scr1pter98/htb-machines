@@ -1,0 +1,4 @@
+# Nmap 7.95 scan initiated Tue Jan 28 02:36:15 2025 as: nmap -p- --open -sS --min-rate 5000 -n -sCV -Pn -oG escaneoNmap_1738042575 10.129.2.143
+Host: 10.129.2.143 ()	Status: Up
+Host: 10.129.2.143 ()	Ports: 23/open/tcp//telnet//Linux telnetd/
+# Nmap done at Tue Jan 28 02:36:52 2025 -- 1 IP address (1 host up) scanned in 37.26 seconds
